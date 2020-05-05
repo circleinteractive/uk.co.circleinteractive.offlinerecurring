@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<menu>
+  <item>
+    <path>civicrm/offlinerecurring/add</path>
+    <title>Set Up Recurring Contribution</title>
+    <page_callback>CRM_OfflineRecurring_Form_RecurringContribution</page_callback>
+    <access_arguments>access CiviContribute</access_arguments>
+    <component>CiviContribute</component>
+  </item>
+</menu>
