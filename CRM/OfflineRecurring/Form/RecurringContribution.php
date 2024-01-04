@@ -119,7 +119,7 @@ class CRM_OfflineRecurring_Form_RecurringContribution extends CRM_Core_Form {
       CRM_Core_OptionGroup::values('recur_frequency_units')
     );
 
-    CRM_Contribute_Form_Contribution_Main::buildRecur($this);
+    $this->buildRecur();
     foreach ([
       'start_date' => TRUE,
       'next_sched_contribution_date' => TRUE,
@@ -128,7 +128,10 @@ class CRM_OfflineRecurring_Form_RecurringContribution extends CRM_Core_Form {
       $this->addField($field, ['entity' => 'ContributionRecur'], $isRequired, FALSE);
     }
 
-    $this->addEntityRef('financial_type_id', ts('Financial Type'), ['entity' => 'FinancialType'], TRUE);
+    $this->addEntityRef('financial_type_id', ts('Financial Type'), [
+      'entity' => 'FinancialType',
+      'select' => ['minimumInputLength' => 0],
+    ], TRUE);
     $this->add('select', 'payment_instrument_id',
       ts('Payment Method'),
       ['' => ts('- select -')] + CRM_Contribute_PseudoConstant::paymentInstrument(),
@@ -241,6 +244,78 @@ class CRM_OfflineRecurring_Form_RecurringContribution extends CRM_Core_Form {
     }
     $recurring = civicrm_api3('ContributionRecur', 'create', $recurParams);
     CRM_OfflineRecurring_BAO_RecurringContribution::add($recurring['id']);
+
+  }
+  /**
+   * Build elements to collect information for recurring contributions.
+   *
+   * Previously shared function.
+   */
+  private function buildRecur(): void {
+    $attributes = CRM_Core_DAO::getAttribute('CRM_Contribute_DAO_ContributionRecur');
+
+    $this->assign('is_recur_interval', CRM_Utils_Array::value('is_recur_interval', $this->_values));
+    $this->assign('is_recur_installments', CRM_Utils_Array::value('is_recur_installments', $this->_values));
+    $paymentObject = $this->getVar('_paymentObject');
+    if ($paymentObject) {
+      $this->assign('recurringHelpText', $paymentObject->getText('contributionPageRecurringHelp', [
+        'is_recur_installments' => !empty($this->_values['is_recur_installments']),
+        'is_email_receipt' => !empty($this->_values['is_email_receipt']),
+      ]));
+    }
+
+    $frUnits = $this->_values['recur_frequency_unit'] ?? NULL;
+    $frequencyUnits = CRM_Core_OptionGroup::values('recur_frequency_units', FALSE, FALSE, TRUE);
+
+    $unitVals = explode(CRM_Core_DAO::VALUE_SEPARATOR, $frUnits);
+
+    $this->add('text', 'installments', ts('installments'),
+      $attributes['installments']
+    );
+    $this->addRule('installments', ts('Number of installments must be a whole number.'), 'integer');
+
+    $is_recur_label = ts('I want to contribute this amount every');
+
+    // CRM 10860, display text instead of a dropdown if there's only 1 frequency unit
+    if (count($unitVals) == 1) {
+      $this->assign('one_frequency_unit', TRUE);
+      $this->add('hidden', 'frequency_unit', $unitVals[0]);
+      if (!empty($this->_values['is_recur_interval'])) {
+        $unit = CRM_Contribute_BAO_Contribution::getUnitLabelWithPlural($unitVals[0]);
+        $this->assign('frequency_unit', $unit);
+      }
+      else {
+        $is_recur_label = ts('I want to contribute this amount every %1',
+          [1 => $frequencyUnits[$unitVals[0]]]
+        );
+        $this->assign('all_text_recur', TRUE);
+      }
+    }
+    else {
+      $this->assign('one_frequency_unit', FALSE);
+      $units = [];
+      foreach ($unitVals as $key => $val) {
+        if (array_key_exists($val, $frequencyUnits)) {
+          $units[$val] = $frequencyUnits[$val];
+          if (!empty($this->_values['is_recur_interval'])) {
+            $units[$val] = CRM_Contribute_BAO_Contribution::getUnitLabelWithPlural($val);
+            $unit = ts('Every');
+          }
+        }
+      }
+      $frequencyUnit = &$this->addElement('select', 'frequency_unit', NULL, $units, ['aria-label' => ts('Frequency Unit')]);
+    }
+
+    if (!empty($this->_values['is_recur_interval'])) {
+      $this->add('text', 'frequency_interval', $unit, $attributes['frequency_interval'] + ['aria-label' => ts('Every')]);
+      $this->addRule('frequency_interval', ts('Frequency must be a whole number (EXAMPLE: Every 3 months).'), 'integer');
+    }
+    else {
+      // make sure frequency_interval is submitted as 1 if given no choice to user.
+      $this->add('hidden', 'frequency_interval', 1);
+    }
+
+    $this->add('checkbox', 'is_recur', $is_recur_label, NULL);
   }
 
 }
