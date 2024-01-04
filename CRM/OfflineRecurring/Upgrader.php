@@ -4,7 +4,7 @@ use CRM_OfflineRecurring_ExtensionUtil as E;
 /**
  * Collection of upgrade steps.
  */
-class CRM_OfflineRecurring_Upgrader extends CRM_OfflineRecurring_Upgrader_Base {
+class CRM_OfflineRecurring_Upgrader extends CRM_Extension_Upgrader_Base {
 
   /**
    * Example: Run an upgrade with a query that touches many (potentially
