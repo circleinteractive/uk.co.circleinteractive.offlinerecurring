@@ -214,7 +214,7 @@
 	{if $softCreditToName and !$pcp_id} {* We show soft credit name with PCP section if contribution is linked to a PCP. *}
     <tr>
     	<td class="label">{ts}Soft Credit To{/ts}</td>
-        <td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$soft_credit_to`"}" id="view_contact" title="{ts}View contact record{/ts}">{$softCreditToName}</a></td>
+        <td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$soft_credit_to`"}" id="view_contact" title="{ts escape='htmlattribute'}View contact record{/ts}">{$softCreditToName}</a></td>
     </tr>
     {/if}	
 </table>
@@ -251,7 +251,7 @@
                 </tr>
                 <tr>
                 	<td class="label">{ts}Soft Credit To{/ts}</td>
-                    <td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$soft_credit_to`"}" id="view_contact" title="{ts}View contact record{/ts}">{$softCreditToName}</a></td>
+                    <td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$soft_credit_to`"}" id="view_contact" title="{ts escape='htmlattribute'}View contact record{/ts}">{$softCreditToName}</a></td>
                 </tr>
                 <tr><td class="label">{ts}In Public Honor Roll?{/ts}</td><td>{if $pcp_display_in_roll}{ts}Yes{/ts}{else}{ts}No{/ts}{/if}</td></tr>
                 {if $pcp_roll_nickname}

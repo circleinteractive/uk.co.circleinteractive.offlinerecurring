@@ -196,7 +196,7 @@
 	{if $softCreditToName}
     <tr>
     	<td class="label">{ts}Soft Credit To{/ts}</td>
-        <td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$soft_credit_to`"}" id="view_contact" title="{ts}View contact record{/ts}">{$softCreditToName}</a></td>
+        <td><a href="{crmURL p="civicrm/contact/view" q="reset=1&cid=`$soft_credit_to`"}" id="view_contact" title="{ts escape='htmlattribute'}View contact record{/ts}">{$softCreditToName}</a></td>
     </tr>
     {/if}	
 </table>
