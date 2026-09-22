@@ -32,7 +32,7 @@ function offlinerecurring_civicrm_config(&$config) {
     if (is_array($template->template_dir)) {
         array_unshift($template->template_dir, $ddDir);
     } else {
-        $template->template_dir = array($ddDir, $template->template_dir);
+        $template->template_dir = [$ddDir, $template->template_dir];
     }
     
     # also fix php include path
@@ -59,7 +59,7 @@ function offlinerecurring_civicrm_enable() {
 
     if ($version >= 4.3) {
         // looks like someone finally wrote an api ..
-        civicrm_api('job', 'create', array(
+        civicrm_api('job', 'create', [
             'version'       => 3,
             'name'          => ts('Process Offline Recurring Payments'),
             'description'   => ts('Processes any offline recurring payments that are due'),
@@ -67,7 +67,7 @@ function offlinerecurring_civicrm_enable() {
             'api_entity'    => 'job',
             'api_action'    => 'process_offline_recurring_payments',
             'is_active'     => 0
-        ));
+        ]);
     } else {
         // otherwise, this ..
         CRM_Core_DAO::executeQuery("
@@ -79,9 +79,9 @@ function offlinerecurring_civicrm_enable() {
                'Processes any offline recurring payments that are due',
                'civicrm_api3', 'job', 'process_offline_recurring_payments', '', 0
             )
-            ", array(
-                1 => array(CIVICRM_DOMAIN_ID, 'Integer')
-            )
+            ", [
+                1 => [CIVICRM_DOMAIN_ID, 'Integer']
+            ]
         );
     }
 

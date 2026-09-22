@@ -48,10 +48,10 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
         
         require_once 'api/api.php';
         $result = civicrm_api('contact', 'get',
-            array(
+            [
                 'version' => 3,
                 'id'      => $cid
-            )
+            ]
         );
         if ($result['is_error']) {
             CRM_Core_Error::fatal('Unable to query contact id in ' . __FILE__ . ' at line ' . __LINE__);
@@ -70,7 +70,7 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
 
             $dao = CRM_Core_DAO::executeQuery(
                 "SELECT * FROM civicrm_contribution_recur WHERE id = %1",
-                array(1 => array($id, 'Integer')) 
+                [1 => [$id, 'Integer']]
             );
             
             if ($dao->fetch()) {
@@ -78,7 +78,7 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
                 if (_offlinerecurring_getCRMVersion() >= 4.4)
                     $dao->next_sched_contribution = $dao->next_sched_contribution_date;
 
-                $defaults = array(
+                $defaults = [
                     'amount'=>$dao->amount ,
                     'frequency_interval'      => $dao->frequency_interval,
                     'frequency_unit'          => $dao->frequency_unit,
@@ -92,7 +92,7 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
                     'enable_edit'             => 0,
                     //'standard_price'=>$dao->standard_price ,
                     //'vat_rate'=>$dao->vat_rate 
-               );
+               ];
                 
                 // Allow $defaults to be modified via hook, before edit form displayed
                 // This will allow/disallow 'edit' to enabled for certain 'payment instruments' or 'payment processor'
@@ -127,9 +127,9 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
             $this->addElement('hidden', 'recur_id', $id);
             $this->assign('recur_id', $id);
             
-            $this->addEntityRef('contact_id', ts('Contact'), array('create' => TRUE, 'api' => array('extra' => array('email'))), TRUE);
+            $this->addEntityRef('contact_id', ts('Contact'), ['create' => TRUE, 'api' => ['extra' => ['email']]], TRUE);
             
-            $this->addElement('text', 'contact_name', 'Contact', array('size' => 50, 'maxlength' => 255));
+            $this->addElement('text', 'contact_name', 'Contact', ['size' => 50, 'maxlength' => 255]);
             $this->addElement('hidden', 'selected_cid', 'selected_cid');
             $this->addElement('checkbox', 'move_recurring_record', ts('Move Recurring Record?'));
             $this->addElement('checkbox', 'move_existing_contributions', ts('Move Existing Contributions?'));
@@ -143,11 +143,11 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
             if(CRM_Core_DAO::checkFieldExists('civicrm_contribution_recur', 'membership_id')) {
               // Get memberships of the contact
               // This will allow the recur record to be attached to a different membership of the same contact
-              $memberships = civicrm_api('membership', 'get',  array('version' => 3, 'contact_id' => $cid));
-              $existingMemberships = array('0' => '- select -');
+              $memberships = civicrm_api('membership', 'get',  ['version' => 3, 'contact_id' => $cid]);
+              $existingMemberships = ['0' => '- select -'];
               if (!empty($memberships['values'])) {
                 foreach ($memberships['values'] as $membership_id => $membership_details) {
-                  $membershipStatusResult = civicrm_api('MembershipStatus', 'getsingle', array('version' => 3, 'id' => $membership_details['status_id']));
+                  $membershipStatusResult = civicrm_api('MembershipStatus', 'getsingle', ['version' => 3, 'id' => $membership_details['status_id']]);
                   $existingMemberships[$membership_id] = $membership_details['membership_name']
                       .' / '.$membershipStatusResult['label']
                       .' / '.$membership_details['start_date']
@@ -165,13 +165,13 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
           }
         }
         
-        $this->add('text', 'amount', ts('Amount'), array(), true);
-        $this->add('text', 'frequency_interval', ts('Every'), array('maxlength' => 2, 'size' => 2), true);
+        $this->add('text', 'amount', ts('Amount'), [], true);
+        $this->add('text', 'frequency_interval', ts('Every'), ['maxlength' => 2, 'size' => 2], true);
         //$form->addRule( 'frequency_interval', 
         //                        ts( 'Frequency must be a whole number (EXAMPLE: Every 3 months).' ), 'integer' );
                         
         $frUnits  = implode(CRM_Core_DAO::VALUE_SEPARATOR, CRM_Core_OptionGroup::values('recur_frequency_units'));                    
-        $units    = array();
+        $units    = [];
         $unitVals = explode(CRM_Core_DAO::VALUE_SEPARATOR, $frUnits);
         
         $frequencyUnits = CRM_Core_OptionGroup::values('recur_frequency_units');
@@ -192,9 +192,9 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
         
         //$this->add( 'text', 'installments', ts( 'installments' ), $attributes['installments'] );
                                             
-        $this->addDate('start_date', ts('Start Date'), true, array('formatType' => 'activityDate'));
-        $this->addDate('next_sched_contribution', ts('Next Scheduled Date'), true, array( 'formatType' => 'activityDate'));
-        $this->addDate('end_date', ts('End Date'), false, array('formatType' => 'activityDate'));
+        $this->addDate('start_date', ts('Start Date'), true, ['formatType' => 'activityDate']);
+        $this->addDate('next_sched_contribution', ts('Next Scheduled Date'), true, [ 'formatType' => 'activityDate']);
+        $this->addDate('end_date', ts('End Date'), false, ['formatType' => 'activityDate']);
         
         if (isset($defaults))        
             $this->setDefaults($defaults);
@@ -207,14 +207,14 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
         //$this->addFormRule( array( 'CRM_Package_Form_Package', 'formRule' ) );
                                
         $this->addButtons(
-            array( 
-                array(
+            [
+                [
                     'type'      => 'next', 
                     'name'      => ts('Save'), 
                     'spacing'   => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;', 
                     'isDefault' => true   
-                ), 
-            ) 
+                ],
+            ]
         );
     }
         
@@ -229,7 +229,7 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
      */
     static function formRule( $values ) 
     {
-        $errors = array( );
+        $errors = [ ];
 
         if (!empty($values['start_date']) && !empty($values['end_date']) ) {
             $start = CRM_Utils_Date::processDate( $values['start_date'] );
@@ -270,23 +270,23 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
             $values       = "NULL, %1, %2, %3, %4, %5, %6, %7, %8, %9, %10";
             $invoice_id   = md5(uniqid(rand(), true));
 
-            $recur_params = array(
-                1 =>  array($params['cid'],                'Integer'),  
-                2 =>  array($params['amount'],             'String'),
-                3 =>  array($params['frequency_interval'], 'String'),
-                4 =>  array($params['frequency_unit'],     'String'),
-                5 =>  array($invoice_id,                   'String'),
-                6 =>  array($invoice_id,                   'String'),
-                7 =>  array($config->defaultCurrency,      'String'),
-                8 =>  array(date('YmdHis'),                'String'),
-                9 =>  array($start_date,                   'String'),
-                10 => array($next_sched_contribution,      'String')
-            );
+            $recur_params = [
+                1 =>  [$params['cid'],                'Integer'],
+                2 =>  [$params['amount'],             'String'],
+                3 =>  [$params['frequency_interval'], 'String'],
+                4 =>  [$params['frequency_unit'],     'String'],
+                5 =>  [$invoice_id,                   'String'],
+                6 =>  [$invoice_id,                   'String'],
+                7 =>  [$config->defaultCurrency,      'String'],
+                8 =>  [date('YmdHis'),                'String'],
+                9 =>  [$start_date,                   'String'],
+                10 => [$next_sched_contribution,      'String']
+            ];
 
             if (isset($end_date)) {
                 $fields          .= ", end_date";
                 $values          .= ", %11";
-                $recur_params[11] = array($end_date, 'String');
+                $recur_params[11] = [$end_date, 'String'];
             }
 
             $sql    = sprintf("INSERT INTO civicrm_contribution_recur (%s) VALUES (%s)", $fields, $values);
@@ -298,19 +298,19 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
             if (_offlinerecurring_getCRMVersion() >= 4.4)
                 $sql = str_replace('next_sched_contribution', 'next_sched_contribution_date', $sql);
 
-            $recur_params = array(
-                1 =>  array($params['amount'],             'String'),
-                2 =>  array($params['frequency_interval'], 'String'),
-                3 =>  array($params['frequency_unit'],     'String'),
-                4 =>  array($start_date,                   'String'),   
-                5 =>  array($next_sched_contribution,      'String'),
-                6 =>  array(date('YmdHis'),                'String'),
-                7 =>  array($params['recur_id'],           'Integer')
-            );
+            $recur_params = [
+                1 =>  [$params['amount'],             'String'],
+                2 =>  [$params['frequency_interval'], 'String'],
+                3 =>  [$params['frequency_unit'],     'String'],
+                4 =>  [$start_date,                   'String'],
+                5 =>  [$next_sched_contribution,      'String'],
+                6 =>  [date('YmdHis'),                'String'],
+                7 =>  [$params['recur_id'],           'Integer']
+            ];
 
             if (isset($end_date)) {
                 $sql            .= ", end_date = %8";
-                $recur_params[8] = array($end_date, 'String');
+                $recur_params[8] = [$end_date, 'String'];
             }
 
             $sql   .= ' WHERE id = %7';                         
@@ -325,10 +325,10 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
               if (!empty($selected_cid)) {
                 // Update contact id in civicrm_contribution_recur table
                 $update_recur_sql = "UPDATE civicrm_contribution_recur SET contact_id = %1 WHERE id = %2";
-                $update_recur_params = array(
-                  1 =>  array($selected_cid,      'Integer'),
-                  2 =>  array($params['recur_id'],  'Integer')
-                );
+                $update_recur_params = [
+                  1 =>  [$selected_cid,      'Integer'],
+                  2 =>  [$params['recur_id'],  'Integer']
+                ];
                 CRM_Core_DAO::executeQuery($update_recur_sql, $update_recur_params);
                 
                 // Update contact id in civicrm_contribution table, if 'Move Existing Contributions?' is ticked
@@ -342,10 +342,10 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
                 if (CRM_Core_DAO::checkFieldExists('civicrm_contribution_recur', 'membership_id')) {
                   // Update membership id in civicrm_contribution_recur table
                   $update_membership_sql = "UPDATE civicrm_contribution_recur SET membership_id = %1 WHERE id = %2";
-                  $update_membership_params = array(
-                    1 =>  array($membership_record,   'Integer'),
-                    2 =>  array($params['recur_id'],  'Integer')
-                  );
+                  $update_membership_params = [
+                    1 =>  [$membership_record,   'Integer'],
+                    2 =>  [$params['recur_id'],  'Integer']
+                  ];
                   CRM_Core_DAO::executeQuery($update_membership_sql, $update_membership_params);
 
                   // Move membership payments if 'Move Existing Contributions?' is ticked
@@ -355,26 +355,26 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
                     // Check if the membership payment exists
                     // if not create new one
                     $contributions_sql = "SELECT cc.id , mp.contribution_id, mp.id as payment_id FROM civicrm_contribution cc LEFT JOIN civicrm_membership_payment mp ON mp.contribution_id = cc.id WHERE cc.contribution_recur_id = %1";
-                    $contributions_params = array(
-                      1 =>  array($params['recur_id'],  'Integer')
-                    );
+                    $contributions_params = [
+                      1 =>  [$params['recur_id'],  'Integer']
+                    ];
                     $contributions_dao = CRM_Core_DAO::executeQuery($contributions_sql, $contributions_params);
                     while($contributions_dao->fetch()) {
                       if (!empty($contributions_dao->contribution_id)) {
                         //Update membership payment
                         $update_membership_payment_sql = "UPDATE civicrm_membership_payment SET membership_id = %1 WHERE id = %2";
-                        $update_membership_payment_params = array(
-                          1 =>  array($membership_record,   'Integer'),
-                          2 =>  array($contributions_dao->payment_id,  'Integer')
-                        );
+                        $update_membership_payment_params = [
+                          1 =>  [$membership_record,   'Integer'],
+                          2 =>  [$contributions_dao->payment_id,  'Integer']
+                        ];
                         CRM_Core_DAO::executeQuery($update_membership_payment_sql, $update_membership_payment_params);
                       } else {
                         //Insert membership payment
                         $insert_membership_payment_sql = "INSERT INTO civicrm_membership_payment SET contribution_id = %2 , membership_id = %1";
-                        $insert_membership_payment_params = array(
-                          1 =>  array($membership_record,   'Integer'),
-                          2 =>  array($contributions_dao->id,  'Integer')
-                        );
+                        $insert_membership_payment_params = [
+                          1 =>  [$membership_record,   'Integer'],
+                          2 =>  [$contributions_dao->id,  'Integer']
+                        ];
                         CRM_Core_DAO::executeQuery($insert_membership_payment_sql, $insert_membership_payment_params);
                       }
                     }
@@ -386,7 +386,7 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
         
         CRM_Core_DAO::executeQuery($sql, $recur_params);
         $recur_id = ($params['action'] == 'add' ? CRM_Core_DAO::singleValueQuery('SELECT LAST_INSERT_ID()') : $params['recur_id']);
-        CRM_Core_DAO::executeQuery("REPLACE INTO civicrm_contribution_recur_offline (recur_id) VALUES (%1)", array(1 => array($recur_id, 'Integer')));
+        CRM_Core_DAO::executeQuery("REPLACE INTO civicrm_contribution_recur_offline (recur_id) VALUES (%1)", [1 => [$recur_id, 'Integer']]);
 
         $session = CRM_Core_Session::singleton();
         //CRM_Core_Session::setStatus($status);
@@ -398,10 +398,10 @@ class Recurring_Form_RecurringContribution extends CRM_Core_Form {
       }
       
   public function displayStatusMessage($messageTitle, $message) {
-    $out = array(
+    $out = [
       'status' => 'fatal',
       'content' => '<div class="messages status no-popup"><div class="icon inform-icon"></div>' . ts( $message ) . '</div>',
-    );
+    ];
     CRM_Core_Session::setStatus($message, ts( $messageTitle ), 'error');
     CRM_Core_Page_AJAX::returnJsonResponse($out);
   }      

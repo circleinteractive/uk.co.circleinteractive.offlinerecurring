@@ -24,8 +24,8 @@ function offlinerecurring_civicrm_pageRun(&$page) {
             WHERE contact_id = %1
         ";
 
-        $dao        = CRM_Core_DAO::executeQuery($query, array(1 => array($contact_id, 'String')));
-        $recurArray = array();
+        $dao        = CRM_Core_DAO::executeQuery($query, [1 => [$contact_id, 'String']]);
+        $recurArray = [];
         
         if (_offlinerecurring_getCRMVersion() >= 4.4)
           $dao->next_sched_contribution = $dao->next_sched_contribution_date;
@@ -39,7 +39,7 @@ function offlinerecurring_civicrm_pageRun(&$page) {
         }
         
         while ($dao->fetch()) {
-            $recurParams = array(
+            $recurParams = [
                 'id'                      => $dao->id,
                 'amount'                  => CRM_Utils_Money::format($dao->amount),
                 'frequency_unit'          => $dao->frequency_unit,
@@ -49,14 +49,14 @@ function offlinerecurring_civicrm_pageRun(&$page) {
                 'payment_processor_id'    => $dao->payment_processor_id,
                 'payment_instrument_id'   => $dao->payment_instrument_id,  
                 'enable_edit'             => 0,
-            );
+            ];
             
             if($membershipIdExists == TRUE) {
               $recurParams['membership_name'] = '';
               if (!empty($dao->membership_id)) {
                 // get membership details, if linked to the recurring record
                 require_once 'api/api.php';
-                $result = civicrm_api('membership', 'get', array('version' => 3, 'id' => $dao->membership_id));
+                $result = civicrm_api('membership', 'get', ['version' => 3, 'id' => $dao->membership_id]);
                 $recurParams['membership_name'] = $result['values'][$dao->membership_id]['membership_name'];
               }
             }
@@ -95,7 +95,7 @@ function offlinerecurring_civicrm_alterRecurringContributionParams( &$params ) {
     return;
   }
   $query = "SELECT * FROM civicrm_contribution_recur_offline WHERE recur_id = %1";
-  $dao = CRM_Core_DAO::executeQuery($query, array(1 => array($params['id'], 'Integer')));
+  $dao = CRM_Core_DAO::executeQuery($query, [1 => [$params['id'], 'Integer']]);
   if ($dao->fetch()) {
     $params['enable_edit'] = 1;
   }
@@ -129,15 +129,15 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
     if (_offlinerecurring_getCRMVersion() >= 4.4)
         $sql = str_replace('next_sched_contribution', 'next_sched_contribution_date', $sql);
 
-    $dao = CRM_Core_DAO::executeQuery($sql, array(
-          1 => array($searchStart, 'String'),
-          2 => array($searchEnd, 'String')
-       )
+    $dao = CRM_Core_DAO::executeQuery($sql, [
+          1 => [$searchStart, 'String'],
+          2 => [$searchEnd, 'String']
+       ]
     );
     
     $counter = 0;
     $errors  = 0;
-    $output  = array();
+    $output  = [];
     
     while($dao->fetch()) {
                 
@@ -153,7 +153,7 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
         
         require_once 'api/api.php';
         $result = civicrm_api('contribution', 'create',
-            array(
+            [
                 'version'                => 3,
                 'contact_id'             => $contact_id,
                 'receive_date'           => $receive_date,
@@ -166,7 +166,7 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
                 'contribution_type_id'   => $contribution_type_id,
                 'contribution_recur_id'  => $contribution_recur_id,
                 //'contribution_page_id'   => $entity_id
-            )
+            ]
         );
         if ($result['is_error']) {
             $output[] = $result['error_message'];
@@ -176,7 +176,7 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
         } else {
             $contribution = reset($result['values']);
             $contribution_id = $contribution['id'];
-            $output[] = ts('Created contribution record for contact id %1', array(1 => $contact_id)); 
+            $output[] = ts('Created contribution record for contact id %1', [1 => $contact_id]);
         }
     
         //$mem_end_date = $member_dao->end_date;
@@ -198,15 +198,15 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
         if (_offlinerecurring_getCRMVersion() >= 4.4)
             $sql = str_replace('next_sched_contribution', 'next_sched_contribution_date', $sql);
 
-        CRM_Core_DAO::executeQuery($sql, array(
-               1 => array($next_collectionDate, 'String'),
-               2 => array($dao->id, 'Integer')
-           )
+        CRM_Core_DAO::executeQuery($sql, [
+               1 => [$next_collectionDate, 'String'],
+               2 => [$dao->id, 'Integer']
+           ]
         );
 
 
         $result = civicrm_api('activity', 'create',
-            array(
+            [
                 'version'             => 3,
                 'activity_type_id'    => 6,
                 'source_record_id'    => $contribution_id,
@@ -215,19 +215,19 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
                 'subject'             => "Offline Recurring Contribution - " . $total_amount,
                 'status_id'           => 2,
                 'activity_date_time'  => date("YmdHis"),            
-            )
+            ]
         );
         if ($result['is_error']) {
             $output[] = ts(
                 'An error occurred while creating activity record for contact id %1: %2',
-                array(
+                [
                     1 => $contact_id,
                     2 => $result['error_message']
-                )
+                ]
             );
             ++$errors;
         } else {
-            $output[] = ts('Created activity record for contact id %1', array(1 => $contact_id)); 
+            $output[] = ts('Created activity record for contact id %1', [1 => $contact_id]);
 
         }
         ++$counter;
@@ -237,10 +237,10 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
     if ($errors)
         return civicrm_api3_create_error(
             ts("Completed, but with %1 errors. %2 records processed.", 
-                array(
+                [
                     1 => $errors,
                     2 => $counter
-                )
+                ]
             ) . "<br />" . implode("<br />", $output)
         );
     
@@ -249,9 +249,9 @@ function civicrm_api3_job_process_offline_recurring_payments($params) {
         return civicrm_api3_create_success(
             ts(
                 '%1 contribution record(s) were processed.', 
-                array(
+                [
                     1 => $counter
-                )
+                ]
             ) . "<br />" . implode("<br />", $output)
         );
    
