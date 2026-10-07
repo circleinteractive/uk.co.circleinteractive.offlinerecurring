@@ -10,10 +10,6 @@
  * http://www.gnu.org/licenses/agpl-3.0.html
  *
  */
- 
-require_once 'CRM/Core/Form.php';
-require_once 'CRM/Core/Session.php';
-require_once 'CRM/Contribute/DAO/ContributionRecur.php';
 
 /**
  * This class provides the functionality to delete a group of
